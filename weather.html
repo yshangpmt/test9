@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Information</title>
+  <!-- Moment.js library for date formatting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <!-- Chart.js library for charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .header {
+        background-color: #ffffff;
+        color: #000000;
+        text-align: center;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+
+    .header h1 {
+        font-size: 32px; /* Adjust as needed for smaller size */
+        font-weight: bold;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .content h2 {
+        font-size: 24px; /* Adjust as needed for smaller size */
+        font-weight: bold;
+    }
+
+    .content h3 {
+        font-size: 18px; /* Adjust as needed for smaller size */
+        font-weight: bold;
+    }
+  
+    .weather-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f5f5f5;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .weather-info p {
+        margin: 5px 0;
+        font-size: 18px;
+        color: #555;
+    }
+
+    .search-container {
+        width: 70%;
+        max-width: 600px;
+        padding: 10px;
+        justify-content: center;
+    }
+
+    #location-form {
+        display: flex;
+        max-width: 600px;
+        align-items: center;
+        background-color: white;
+        border-radius: 25px;
+        box-shadow: 0 1px 6px rgba(32,33,36,.28);
+        padding: 10px 20px;
+        margin-top: 20px;
+    }
+
+    #location-input {
+        width: 800px;
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 16px;
+    }
+
+    button[type="submit"] {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        color: #4285f4;
+        font-size: 16px;
+    }
+
+    .parent-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    @media (max-width: 576px) {
+        h1 {
+          font-size: 24px;
+        }
+    }
+    
+    .back-button {
+        background: none;
+        border: none;
+        color: #007bff; /* Change color as needed */
+        font-size: 16px;
+        cursor: pointer;
+        transition: color 0.3s;
+        display: flex;
+        align-items: center;
+    }
+
+    .back-button:hover {
+        color: #0056b3; /* Change hover color as needed */
+    }
+
+    .back-button i {
+        margin-left: 10px; /* Adjust spacing between icon and text */
+        margin-top: 10px;
+        font-size: 30px;
+    }
+
+  </style>
+</head>
+<body>
+  <button class="back-button" onclick="goBack()">
+    <i class="fas fa-arrow-circle-left"></i> 
+</button>
+  
+    <div class="parent-container">
+      <div class="search-container">
+        <form id="location-form">
+          <input id="location-input" type="text" placeholder="Enter location">
+          <button type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+
+  <div class="container">
+    <div class="header">
+      <h1 id="header-title">Weather Information for Alor Setar</h1>
+    </div>
+    
+
+    <div class="content">
+      <div class="weather-section">
+        <h2>Current Weather</h2>
+        <div id="weather-info">
+          <p>Loading...</p>
+          
+        </div>
+      </div>
+
+      <div class="weather-section">
+        <h2>Air Pollution</h2>
+        <div id="air-pollution-info">
+          <p>Loading...</p>
+        </div>
+      </div>
+      
+
+      <script>
+        // Replace with your OpenWeather API key
+        const apiKey = 'bc438640405e0116c32119682e1d1001';
+        // Alor Setar coordinates
+        const defaultLat = 6.1241;
+        const defaultLon = 100.3677;
+    
+        // URLs for API requests
+        let currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${defaultLat}&lon=${defaultLon}&appid=${apiKey}&units=metric`;
+        let airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${defaultLat}&lon=${defaultLon}&appid=${apiKey}`;
+    
+        // Function to fetch current weather data
+        async function getCurrentWeather(url = currentWeatherUrl) {
+          try {
+            const response = await fetch(url);
+            const data = await response.json();
+            displayCurrentWeather(data);
+            // Perform calculations based on current weather data
+            const feelsLike = data.main.feels_like;
+            const windSpeed = data.wind.speed;
+            const windCategory = getWindCategory(windSpeed);
+            console.log(`Feels like: ${feelsLike}°C`);
+            console.log(`Wind category: ${windCategory}`);
+          } catch (error) {
+            console.error('Error fetching current weather data:', error);
+            document.getElementById('weather-info').innerHTML = '<p>Failed to fetch current weather data.</p>';
+          }
+        }
+    
+        // Function to display current weather data
+        function displayCurrentWeather(data) {
+          const weatherInfo = `
+            <p>Temperature: ${data.main.temp} &deg;C</p>
+            <p>Humidity: ${data.main.humidity} %</p>
+            <p>Wind Speed: ${data.wind.speed} m/s</p>
+            <p>Wind Category: ${getWindCategory(data.wind.speed)}</p>
+            <p>Description: ${data.weather[0].description}</p>
+            <br>
+            <p>Last Updated: ${moment().format('YYYY-MM-DD HH:mm:ss')}</p>
+          `;
+          document.getElementById('weather-info').innerHTML = weatherInfo;
+        }
+    
+        // Function to fetch air pollution data
+        async function getAirPollutionData(url = airPollutionUrl) {
+          try {
+            const response = await fetch(url);
+            const data = await response.json();
+            displayAirPollution(data);
+            // Perform calculations based on air pollution data
+            const pm25 = data.list[0].components.pm2_5;
+            const pm10 = data.list[0].components.pm10;
+            console.log(`PM2.5: ${pm25} µg/m³`);
+            console.log(`PM10: ${pm10} µg/m³`);
+          } catch (error) {
+            console.error('Error fetching air pollution data:', error);
+            document.getElementById('air-pollution-info').innerHTML = '<p>Failed to fetch air pollution data.</p>';
+          }
+        }
+    
+        // Function to display air pollution data
+        function displayAirPollution(data) {
+          // Calculate Air Quality Index (AQI) based on PM2.5 or PM10
+          const pm25 = data.list[0].components.pm2_5;
+          const pm10 = data.list[0].components.pm10;
+          const aqiValue = calculateAQI(pm25 > pm10 ? pm25 : pm10);
+          const aqiStatus = getAQIStatus(aqiValue);
+    
+          const pollutionInfo = `
+            <p>CO: ${data.list[0].components.co.toFixed(2)} µg/m³</p>
+            <p>NO: ${data.list[0].components.no.toFixed(2)} µg/m³</p>
+            <p>NO<sub>2</sub>: ${data.list[0].components.no2.toFixed(2)} µg/m³</p>
+            <p>O<sub>3</sub>: ${data.list[0].components.o3.toFixed(2)} µg/m³</p>
+            <p>SO<sub>2</sub>: ${data.list[0].components.so2.toFixed(2)} µg/m³</p>
+            <p>PM<sub>2.5</sub>: ${data.list[0].components.pm2_5.toFixed(2)} µg/m³</p>
+            <p>PM<sub>10</sub>: ${data.list[0].components.pm10.toFixed(2)} µg/m³</p>
+            <p>Air Quality Index (AQI): <strong>${aqiValue}</strong></p>
+            <p>Status: <strong>${aqiStatus}</strong></p>
+            <br>
+            <p>Last Updated: ${moment().format('YYYY-MM-DD HH:mm:ss')}</p>
+          `;
+          document.getElementById('air-pollution-info').innerHTML = pollutionInfo;
+
+        }
+    
+        // Function to calculate Air Quality Index (AQI)
+        function calculateAQI(concentration) {
+          // Define AQI breakpoints and corresponding AQI ranges
+          const breakpoints = [0, 12, 35.4, 55.4, 150.4, 250.4, 350.4, 500.4];
+          const ranges = [0, 50, 100, 150, 200, 300, 400, 500];
+    
+          // Iterate through breakpoints to find the corresponding AQI range
+          for (let i = 0; i < breakpoints.length; i++) {
+            if (concentration <= breakpoints[i]) {
+              // Linear interpolation formula to calculate AQI
+              const AQI = (ranges[i] / breakpoints[i]) * concentration;
+              return Math.round(AQI);
+            }
+          }
+    
+          return Math.round((ranges[ranges.length - 1] / breakpoints[breakpoints.length - 1]) * concentration);
+        }
+    
+        // Function to get Air Quality Index (AQI) status
+        function getAQIStatus(aqiValue) {
+          if (aqiValue >= 0 && aqiValue <= 50) {
+            return 'Good';
+          } else if (aqiValue >= 51 && aqiValue <= 100) {
+            return 'Moderate';
+          } else if (aqiValue >= 101 && aqiValue <= 150) {
+            return 'Unhealthy for Sensitive Groups';
+          } else if (aqiValue >= 151 && aqiValue <= 200) {
+            return 'Unhealthy';
+          } else if (aqiValue >= 201 && aqiValue <= 300) {
+            return 'Very Unhealthy';
+          } else if (aqiValue > 300) {
+            return 'Hazardous';
+          } else {
+            return 'Unknown';
+          }
+        }
+    
+        // Function to categorize wind speed
+        function getWindCategory(speed) {
+          if (speed < 0.3) {
+            return 'Calm';
+          } else if (speed >= 0.3 && speed < 1.6) {
+            return 'Light air';
+          } else if (speed >= 1.6 && speed < 3.4) {
+            return 'Light breeze';
+          } else if (speed >= 3.4 && speed < 5.5) {
+            return 'Gentle breeze';
+          } else if (speed >= 5.5 && speed < 8.0) {
+            return 'Moderate breeze';
+          } else if (speed >= 8.0 && speed < 10.8) {
+            return 'Fresh breeze';
+          } else if (speed >= 10.8 && speed < 13.9) {
+            return 'Strong breeze';
+          } else if (speed >= 13.9 && speed < 17.2) {
+            return 'High wind, moderate gale, near gale';
+          } else if (speed >= 17.2 && speed < 20.8) {
+            return 'Gale, fresh gale';
+          } else if (speed >= 20.8 && speed < 24.5) {
+            return 'Strong gale';
+          } else if (speed >= 24.5 && speed < 28.5) {
+            return 'Storm, whole gale';
+          } else if (speed >= 28.5 && speed < 32.7) {
+            return 'Violent storm';
+          } else {
+            return 'Hurricane force';
+          }
+        }
+    
+        // Function to handle form submission and update URLs
+        document.getElementById('location-form').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const location = document.getElementById('location-input').value;
+         
+          if (location === '') {
+             alert('Please enter a location.');
+             return;
+          }
+
+          // Fetch geocoding data for the entered location
+          const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${apiKey}`;
+          try {
+            const response = await fetch(geocodingUrl);
+            const data = await response.json();
+            if (data.length > 0) {
+              const { lat, lon } = data[0];
+              currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+              airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+              // Update header title
+              document.getElementById('header-title').textContent = `Weather Information for ${location}`;
+              // Fetch new weather and air pollution data
+              await getCurrentWeather(currentWeatherUrl);
+              await getAirPollutionData(airPollutionUrl);
+            } else {
+              console.error('Location not found.');
+              document.getElementById('weather-info').innerHTML = '<p>Location not found.</p>';
+              document.getElementById('air-pollution-info').innerHTML = '<p>Location not found.</p>';
+            }
+          } catch (error) {
+            console.error('Error fetching location data:', error);
+            document.getElementById('weather-info').innerHTML = '<p>Failed to fetch location data.</p>';
+            document.getElementById('air-pollution-info').innerHTML = '<p>Failed to fetch location data.</p>';
+          }
+        });
+    
+        // Fetch default weather and air pollution data for Alor Setar
+        getCurrentWeather();
+        getAirPollutionData();
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+      </script>
+</body>
+</html>

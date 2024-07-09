@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journey Through Realms</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container styles */
+        .container {
+            max-width: 800px; /* Adjusted maximum width */
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Header styles */
+        h1 {
+            font-size: 2em;
+            color: #333;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Navbar styles */
+        .navbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .navbar a {
+            display: block;
+            width: 90%;
+            height: 98px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            text-decoration: none;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Specific background images */
+        .weather {
+            background-image: url('weather.jpg');
+        }
+        .nasa {
+            background-image: url('nasa.jpg');
+        }
+        .movies {
+            background-image: url('movies.jpg');
+        }
+        .youtube {
+            background-image: url('youtube.jpg');
+        }
+        .userLogs {
+            background-image: url('user_logs.avif');
+        }
+
+        /* Overlay styles */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Adjust transparency as needed */
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .navbar a:hover .overlay {
+            opacity: 1;
+        }
+
+        /* Text on overlay */
+        .overlay-text {
+            color: white;
+            font-size: 1.2em;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Journey Through Realms</h1>
+        <div class="navbar">
+            <a href="weather.html" class="weather">
+                Weather
+                <div class="overlay">
+                    <div class="overlay-text">Explore Weather</div>
+                </div>
+            </a>
+            <a href="nasa.html" class="nasa">
+                NASA
+                <div class="overlay">
+                    <div class="overlay-text">Discover NASA</div>
+                </div>
+            </a>
+            <a href="movies.html" class="movies">
+                Movies
+                <div class="overlay">
+                    <div class="overlay-text">Review Movies</div>
+                </div>
+            </a>
+            <a href="youtube.html" class="youtube">
+                YouTube
+                <div class="overlay">
+                    <div class="overlay-text">Visit YouTube</div>
+                </div>
+            </a>
+            <a href="history.html" class="userLogs">
+                User Logs
+                <div class="overlay">
+                    <div class="overlay-text">View User Logs</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

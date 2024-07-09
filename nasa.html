@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA</title>
+    <!-- Bootstrap CSS for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            background-color: #ffffff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            flex-grow: 1; /* Grow to fill available space */
+            margin-bottom: 20px; /* Add margin at the bottom */
+        }
+        
+        .apod-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .apod-image-container {
+            display: flex;
+            justify-content: center;
+            align-items: middle;
+            height: 400px;
+        }
+
+        h1 {
+            color: #000000;
+            text-align: center;
+            font-size: 32px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #007bff; /* Change color as needed */
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button:hover {
+            color: #0056b3; /* Change hover color as needed */
+        }
+
+        .back-button i {
+            margin-left: 10px; /* Adjust spacing between icon and text */
+            margin-top: 10px;
+            font-size: 30px;
+        }
+
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">
+        <i class="fas fa-arrow-circle-left"></i>
+    </button>
+
+    <div class="container">
+        <h1 class="text-center mb-4"><strong>NASA Astronomy Picture of the Day</strong></h1>
+    </div>
+
+    <div class="container">
+        <div class="form-group">
+            <label for="apod-date">Select Date:</label>
+            <input type="date" id="apod-date" class="form-control">
+            <button id="submit-date" class="btn btn-primary mt-2">Submit</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="apod-content" class="mt-4">
+            <div class="apod-image-container">
+                <img src="" alt="NASA APOD" class="apod-image" id="apod-image">
+            </div>
+            <div id="apod-details">
+                <!-- Details like title, date, explanation will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="asteroid-content" class="mt-4">
+            <canvas id="asteroid-chart" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <!-- jQuery for functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Moment.js for date manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JavaScript -->
+    <script>
+        const apiKey = 'oBNpLnObagTo4cVdWp66q7kPZjbROkBT8yiP9Fdm';
+        const apodEndpoint = 'https://api.nasa.gov/planetary/apod';
+        const neoWsEndpoint = 'https://api.nasa.gov/neo/rest/v1/feed';
+
+        // Function to fetch data from APOD API based on selected date
+        function fetchApodByDate(date) {
+            $.ajax({
+                url: `${apodEndpoint}?api_key=${apiKey}&date=${date}`,
+                method: 'GET'
+            }).done(function(response) {
+                // Handle successful response
+                console.log(response);
+                displayApodData(response);
+            }).fail(function(error) {
+                // Handle API call failure
+                console.error('Error fetching APOD data:', error);
+                $('#apod-content').html('<p class="text-danger">Failed to fetch data from NASA API.</p>');
+            });
+        }
+
+        // Function to display APOD data
+        function displayApodData(data) {
+            // Format date using Moment.js
+            const formattedDate = moment(data.date).format('MMMM Do, YYYY');
+
+            // Display the image or video based on media type
+            if (data.media_type === 'image') {
+                $('#apod-image').attr('src', data.url);
+            } else if (data.media_type === 'video') {
+                $('#apod-image-container').html(`<iframe width="100%" height="315" src="${data.url}" frameborder="0" allowfullscreen></iframe>`);
+            }
+
+            // Display title, date, and explanation
+            $('#apod-details').html(`
+                <h3>${data.title}</h3>
+                <p><strong>Date:</strong> ${formattedDate}</p>
+                <p>${data.explanation}</p>
+            `);
+
+            // Example: Display additional data using Chart.js
+            displayChartData(data);
+        }
+
+        // Function to fetch data from NeoWs API based on selected date
+        function fetchAsteroidData(startDate, endDate) {
+            $.ajax({
+                url: `${neoWsEndpoint}?api_key=${apiKey}&start_date=${startDate}&end_date=${endDate}`,
+                method: 'GET'
+            }).done(function(response) {
+                // Handle successful response
+                console.log(response);
+                displayAsteroidData(response);
+            }).fail(function(error) {
+                // Handle API call failure
+                console.error('Error fetching asteroid data:', error);
+                $('#asteroid-content').html('<p class="text-danger">Failed to fetch asteroid data from NASA API.</p>');
+            });
+        }
+
+        // Function to display asteroid data using Chart.js
+        function displayAsteroidData(data) {
+            // Prepare arrays for labels and data points
+            let labels = [];
+            let asteroidCounts = [];
+
+            // Iterate over each date in the data
+            for (const date in data.near_earth_objects) {
+                // Get the number of asteroids for the current date
+                const count = data.near_earth_objects[date].length;
+
+                // Add date to labels array
+                labels.push(date);
+
+                // Add asteroid count to data array
+                asteroidCounts.push(count);
+            }
+
+            // Calculate the average number of asteroids
+            const totalAsteroids = asteroidCounts.reduce((total, count) => total + count, 0);
+            const averageAsteroids = totalAsteroids / asteroidCounts.length;
+
+            // Display chart using Chart.js
+            const ctx = document.getElementById('asteroid-chart').getContext('2d');
+            const asteroidChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Asteroids Discovered',
+                        data: asteroidCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Number of Asteroids Discovered (${labels.length} days)`,
+                            font: {
+                                size: 25,
+                                weight: 'bold'
+                            },
+                            color: '#333',
+                            align: 'start' // Align title to the left
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: -13, 
+                            bottom: 40
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Display average number of asteroids
+            const averageStatus = getAverageStatus(averageAsteroids);
+            $('#asteroid-content').append(`<h5>Average Number of Asteroids Discovered: <strong>${averageAsteroids.toFixed(2)} (${averageStatus})</strong></h5>`);
+        }
+
+        function getAverageStatus(average) {
+            if (average > 10) {
+                return "High asteroid activity";
+            } else if (average > 5) {
+                return "Moderate asteroid activity";
+            } else {
+                return "Low asteroid activity";
+            }
+        }
+
+        // Event listener for submit button to fetch APOD data
+        $('#submit-date').on('click', function() {
+            const selectedDate = $('#apod-date').val();
+            fetchApodByDate(selectedDate);
+        });
+
+        // Default fetch for today's APOD
+        fetchApodByDate(moment().format('YYYY-MM-DD'));
+
+        // Example: Fetch asteroid data for the last 7 days
+        const endDate = moment().format('YYYY-MM-DD');
+        const startDate = moment().subtract(6, 'days').format('YYYY-MM-DD');
+        fetchAsteroidData(startDate, endDate);
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Event listener for the submit button
+        $('#submit-date').on('click', function() {
+            const selectedDate = $('#apod-date').val();
+            if (selectedDate) {
+                fetchApodByDate(selectedDate);
+                // Log the interaction
+                logInteraction('Submit NASA date: ' + selectedDate);
+            }
+        });
+
+        function logInteraction(action) {
+                const interactions = JSON.parse(localStorage.getItem('interactions')) || [];
+                const now = new Date();
+                const date = now.toLocaleDateString();
+                const time = now.toLocaleTimeString();
+                const interaction = {
+                    action,
+                    date,
+                    time
+                };
+                interactions.push(interaction);
+                localStorage.setItem('interactions', JSON.stringify(interactions));
+            }
+    </script>
+</body>
+</html>
